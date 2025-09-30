@@ -3,7 +3,7 @@
 // so the rest of the app can remain unchanged.
 
 // Config: change via Vite env VITE_API_BASE or default localhost
-const API_BASE = import.meta?.env?.VITE_API_BASE || "http://localhost:5000";
+const API_BASE = "https://notflix-back.onrender.com";
 
 // ---- Lightweight auth state management ----
 let currentUser = null; // { uid, name, email } or null
