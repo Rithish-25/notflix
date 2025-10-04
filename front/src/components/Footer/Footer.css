@@ -17,10 +17,21 @@
 
 .footer ul{
     display: grid;
-    grid-template-columns: auto auto auto auto;
+    grid-template-columns: auto auto auto auto auto;
     gap: 15px;
     margin-bottom: 30px;
     list-style: none;
+}
+
+.footer ul li{
+    cursor: pointer;
+    transition: color 0.3s ease;
+    font-size: 14px;
+    color: #ccc;
+}
+
+.footer ul li:hover{
+    color: #e50914;
 }
 
 .copyright-text{

@@ -4,6 +4,11 @@ import { Routes, Route, useNavigate } from 'react-router-dom'
 import Login from './pages/Login/Login'
 import Player from './pages/Player/Player'
 import Profile from './pages/Profile/Profile'
+import MediaCenter from './pages/MediaCenter/MediaCenter'
+import LegalNotices from './pages/LegalNotices/LegalNotices'
+import TermsOfUse from './pages/TermsOfUse/TermsOfUse'
+import Privacy from './pages/Privacy/Privacy'
+import AboutUs from './pages/AboutUs/AboutUs'
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from './firebase'
 import { AppProvider } from './context/AppContext'
@@ -37,6 +42,11 @@ const App = () => {
           <Route path='/login' element = {<Login />}/>
           <Route path='/player/:id' element = {<Player />}/>
           <Route path='/profile' element = {<Profile />}/>
+          <Route path='/media-center' element = {<MediaCenter />}/>
+          <Route path='/legal-notices' element = {<LegalNotices />}/>
+          <Route path='/terms-of-use' element = {<TermsOfUse />}/>
+          <Route path='/privacy' element = {<Privacy />}/>
+          <Route path='/about-us' element = {<AboutUs />}/>
         </Routes>
         
       </div>
