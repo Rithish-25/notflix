@@ -10,16 +10,39 @@ import Footer from '../../components/Footer/Footer'
 import { useAppContext } from '../../context/AppContext'
 import { apiService } from '../../services/api'
 import SearchResults from '../../components/SearchResults/SearchResults'
+import { useNavigate, Link } from 'react-router-dom'
+import cards_data from '../../assets/cards/Cards_data'
 
+// Local Content Section Component
+const LocalContentSection = () => {
+  return (
+    <div className='tile-cards'>
+      <h2>Local Content</h2>
+      <div className="card-list">
+        {cards_data.map((card, index) => {
+          const cardId = card.name.toLowerCase().replace(/\s+/g, '');
+          return (
+            <Link to={`/player/${cardId}`} className="card" key={index}>
+              <img src={card.image} alt={card.name} />
+              <p>{card.name}</p>
+            </Link>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
 
 const Home = () => {
   const { currentPage, heroContent, addNotification } = useAppContext();
+  const navigate = useNavigate();
   const [content, setContent] = useState({
     movies: [],
     tvShows: [],
     trending: [],
     myList: []
   });
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
 
   useEffect(() => {
     const loadContent = async () => {
@@ -62,15 +85,17 @@ const Home = () => {
 
   const handlePlay = () => {
     if (heroContent) {
-      addNotification(`Playing ${heroContent.title || heroContent.name}`, 'success');
-      // You can add navigation to player here
+      // Navigate to player with the content ID
+      const contentType = heroContent.media_type || 'movie';
+      const contentId = heroContent.id;
+      navigate(`/player/${contentId}?type=${contentType}`);
     }
   };
 
   const handleMoreInfo = () => {
     if (heroContent) {
-      addNotification(`Showing details for ${heroContent.title || heroContent.name}`, 'info');
-      // You can add a modal or navigation to details page here
+      // Show detailed info modal
+      setShowDetailsModal(true);
     }
   };
 
@@ -124,6 +149,7 @@ const Home = () => {
             <TitleCards title="Only on Netflix" category="popular" />
             <TitleCards title="Upcoming" category="upcoming" />
             <TitleCards title="Top picks for you" category="now_playing" />
+            <LocalContentSection />
           </div>
         );
     }
@@ -155,6 +181,52 @@ const Home = () => {
       </div>
       {renderContent()}
       <Footer/>
+      
+      {/* Details Modal */}
+      {showDetailsModal && heroContent && (
+        <div className="details-modal-overlay" onClick={() => setShowDetailsModal(false)}>
+          <div className="details-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>{heroContent.title || heroContent.name}</h2>
+              <button className="close-btn" onClick={() => setShowDetailsModal(false)}>×</button>
+            </div>
+            <div className="modal-content">
+              <div className="modal-poster">
+                <img 
+                  src={`https://image.tmdb.org/t/p/w500${heroContent.poster_path || heroContent.backdrop_path}`} 
+                  alt={heroContent.title || heroContent.name}
+                />
+              </div>
+              <div className="modal-info">
+                <div className="modal-meta">
+                  <span className="rating">⭐ {heroContent.vote_average?.toFixed(1) || 'N/A'}</span>
+                  <span className="year">
+                    {heroContent.release_date?.slice(0, 4) || heroContent.first_air_date?.slice(0, 4) || 'N/A'}
+                  </span>
+                  <span className="runtime">
+                    {heroContent.runtime ? `${heroContent.runtime} min` : 
+                     heroContent.episode_run_time ? `${heroContent.episode_run_time[0]} min` : 'N/A'}
+                  </span>
+                </div>
+                <p className="overview">{heroContent.overview || 'No description available.'}</p>
+                <div className="modal-genres">
+                  {heroContent.genres?.map((genre, index) => (
+                    <span key={index} className="genre-tag">{genre.name}</span>
+                  ))}
+                </div>
+                <div className="modal-actions">
+                  <button className="play-btn" onClick={handlePlay}>
+                    <img src={play_icon} alt="" />Play
+                  </button>
+                  <button className="add-to-list-btn">
+                    {heroContent.isInMyList ? '✓' : '+'} My List
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

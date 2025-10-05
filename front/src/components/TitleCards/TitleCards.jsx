@@ -70,8 +70,12 @@ useEffect(()=>{
       <div className="card-list" ref={cardsRef}>
         {apiData.map((card, index)=>{
           const isInList = isInMyList(card.id);
+          // Create a URL-friendly ID for local content
+          const cardId = card.id || card.name?.toLowerCase().replace(/\s+/g, '');
+          const linkPath = card.id ? `/player/${card.id}` : `/player/${cardId}`;
+          
           return (
-            <Link to={`/player/${card.id}`} className="card" key={index}>
+            <Link to={linkPath} className="card" key={index}>
               <img src={`https://image.tmdb.org/t/p/w500${card.backdrop_path || card.poster_path}`} alt="" />
               <p>{card.original_title || card.name}</p>
               <button 

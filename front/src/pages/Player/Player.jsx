@@ -1,14 +1,17 @@
 import React, { useEffect, useState } from 'react'
 import './Player.css'
 import back_arrow_icon from '../../assets/back_arrow_icon.png'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useAppContext } from '../../context/AppContext'
+import cards_data from '../../assets/cards/Cards_data'
 
 const Player = () => {
 
   const {id} = useParams();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { addToViewingHistory } = useAppContext();
+  const contentType = searchParams.get('type') || 'movie';
 
 const [apiData, setApiData] = useState({
   name: "",
@@ -17,8 +20,10 @@ const [apiData, setApiData] = useState({
   type: ""
 })
 
+const [movieDetails, setMovieDetails] = useState(null);
 const [loading, setLoading] = useState(true);
 const [error, setError] = useState(null);
+const [isLocalContent, setIsLocalContent] = useState(false);
 
 const options = {
   method: 'GET',
@@ -29,35 +34,70 @@ const options = {
 };
 
 useEffect(()=>{
-  // Fetch video data
-  fetch(`https://api.themoviedb.org/3/movie/${id}/videos?language=en-US`, options)
-  .then(res => res.json())
-  .then(res => {
-    if (res.results && res.results.length > 0) {
-      setApiData(res.results[0]);
-    } else {
-      setError('No video available for this movie');
-    }
+  // Check if this is local content (from cards_data)
+  const localCard = cards_data.find(card => card.name.toLowerCase().replace(/\s+/g, '') === id.toLowerCase().replace(/\s+/g, ''));
+  
+  if (localCard) {
+    // Handle local content
+    setIsLocalContent(true);
+    setApiData({
+      name: `${localCard.name} - Trailer`,
+      key: "dQw4w9WgXcQ", // Rick Roll as placeholder - you can replace with actual trailer IDs
+      published_at: "2024-01-01",
+      type: "Trailer"
+    });
+    setMovieDetails({
+      title: localCard.name,
+      overview: `Experience the amazing story of ${localCard.name}. A must-watch content that will keep you entertained.`,
+      vote_average: 8.5,
+      release_date: "2024-01-01",
+      runtime: 120,
+      genres: [{ name: "Action" }, { name: "Drama" }]
+    });
     setLoading(false);
-  })
-  .catch(err => {
-    console.error(err);
-    setError('Failed to load video');
-    setLoading(false);
-  });
+  } else {
+    // Handle TMDB content
+    setIsLocalContent(false);
+    
+    // Fetch video data
+    const videoUrl = contentType === 'tv' 
+      ? `https://api.themoviedb.org/3/tv/${id}/videos?language=en-US`
+      : `https://api.themoviedb.org/3/movie/${id}/videos?language=en-US`;
+      
+    fetch(videoUrl, options)
+    .then(res => res.json())
+    .then(res => {
+      if (res.results && res.results.length > 0) {
+        setApiData(res.results[0]);
+      } else {
+        setError('No video available for this content');
+      }
+      setLoading(false);
+    })
+    .catch(err => {
+      console.error(err);
+      setError('Failed to load video');
+      setLoading(false);
+    });
 
-  // Fetch movie details for history tracking (separate call)
-  fetch(`https://api.themoviedb.org/3/movie/${id}?language=en-US`, options)
-  .then(res => res.json())
-  .then(movieInfo => {
-    if (movieInfo && movieInfo.success !== false) {
-      addToViewingHistory(movieInfo);
-    }
-  })
-  .catch(err => {
-    console.log('History tracking failed:', err);
-  });
-},[])
+    // Fetch content details for history tracking
+    const detailsUrl = contentType === 'tv'
+      ? `https://api.themoviedb.org/3/tv/${id}?language=en-US`
+      : `https://api.themoviedb.org/3/movie/${id}?language=en-US`;
+      
+    fetch(detailsUrl, options)
+    .then(res => res.json())
+    .then(contentInfo => {
+      if (contentInfo && contentInfo.success !== false) {
+        setMovieDetails(contentInfo);
+        addToViewingHistory(contentInfo);
+      }
+    })
+    .catch(err => {
+      console.log('History tracking failed:', err);
+    });
+  }
+},[id, contentType])
 
   return (
     <div className='player'>
@@ -72,7 +112,7 @@ useEffect(()=>{
       {error && (
         <div className="error-message">
           <p>{error}</p>
-          <p>This movie may not have a trailer available.</p>
+          <p>This content may not have a trailer available.</p>
         </div>
       )}
       
@@ -87,9 +127,31 @@ useEffect(()=>{
             allowFullScreen
           ></iframe>
           <div className="player-info">
-            <p>{apiData.published_at ? apiData.published_at.slice(0,10) : 'Date not available'}</p>
-            <p>{apiData.name || 'Video'}</p>
-            <p>{apiData.type || 'Trailer'}</p>
+            <div className="video-details">
+              <h2>{movieDetails?.title || movieDetails?.name || 'Video'}</h2>
+              <p className="overview">{movieDetails?.overview || 'No description available.'}</p>
+              <div className="meta-info">
+                <span className="rating">⭐ {movieDetails?.vote_average?.toFixed(1) || 'N/A'}</span>
+                <span className="year">
+                  {movieDetails?.release_date?.slice(0, 4) || movieDetails?.first_air_date?.slice(0, 4) || 'N/A'}
+                </span>
+                <span className="runtime">
+                  {movieDetails?.runtime ? `${movieDetails.runtime} min` : 
+                   movieDetails?.episode_run_time ? `${movieDetails.episode_run_time[0]} min` : 'N/A'}
+                </span>
+                {isLocalContent && <span className="local-badge">Local Content</span>}
+              </div>
+              <div className="genres">
+                {movieDetails?.genres?.map((genre, index) => (
+                  <span key={index} className="genre-tag">{genre.name}</span>
+                ))}
+              </div>
+            </div>
+            <div className="video-meta">
+              <p><strong>Video:</strong> {apiData.name || 'Trailer'}</p>
+              <p><strong>Type:</strong> {apiData.type || 'Trailer'}</p>
+              <p><strong>Date:</strong> {apiData.published_at ? apiData.published_at.slice(0,10) : 'N/A'}</p>
+            </div>
           </div>
         </>
       )}
