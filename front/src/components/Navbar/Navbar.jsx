@@ -1,31 +1,33 @@
-import React, { useEffect, useRef, useState } from 'react'
-import './Navbar.css'
-import logo from '../../assets/logo1.png'
-import search_icon from '../../assets/search_icon.svg'
-import bell_icon from '../../assets/bell_icon.svg'
-import profile_img from '../../assets/profile_img.png'
-import caret_icon from '../../assets/caret_icon.svg'
-import { logout } from '../../firebase'
-import { useAppContext } from '../../context/AppContext'
-import { useNavigate } from 'react-router-dom'
+// Navbar.jsx
+// Uploaded image path (as requested): /mnt/data/d6625765-c390-423a-830b-26fe489f0c7b.png
+
+import React, { useEffect, useRef, useState } from 'react';
+import './Navbar.css';
+import logo from '../../assets/logo1.png';
+import search_icon from '../../assets/search_icon.svg';
+import bell_icon from '../../assets/bell_icon.svg';
+import profile_img from '../../assets/profile_img.png';
+import caret_icon from '../../assets/caret_icon.svg';
+import { logout } from '../../firebase';
+import { useAppContext } from '../../context/AppContext';
+import { useNavigate } from 'react-router-dom';
 
 const Navbar = () => {
-
-  const navRef = useRef();
+  const navRef = useRef(null);
   const navigate = useNavigate();
-  const { 
-    currentPage, 
-    setCurrentPage, 
-    searchQuery, 
-    setSearchQuery, 
-    handleSearch, 
-    searchResults, 
+  const {
+    currentPage,
+    setCurrentPage,
+    searchQuery,
+    setSearchQuery,
+    handleSearch,
+    searchResults,
     isSearching,
     notifications,
     addNotification,
-    userProfile
+    userProfile,
   } = useAppContext();
-  
+
   const [showSearch, setShowSearch] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
@@ -45,92 +47,115 @@ const Navbar = () => {
 
   const displayFirstName = getFirstName(userProfile?.name || userProfile?.email);
 
-  useEffect(()=>{
-    window.addEventListener('scroll', ()=>{
-      if(window.scrollY >= 80){
-        navRef.current.classList.add('nav-dark')
-      }else{
-        navRef.current.classList.remove('nav-dark')
-      }
-    })
-
-    // Close dropdowns when clicking outside
-    const handleClickOutside = (event) => {
-      if (!event.target.closest('.search-container') && !event.target.closest('.notifications-container') && !event.target.closest('.navbar-profile')) {
-        setShowSearch(false);
-        setShowNotifications(false);
-        setShowProfileDropdown(false);
+  useEffect(() => {
+    // named handler so we can remove it cleanly
+    const onScroll = () => {
+      const el = navRef.current;
+      if (!el) return;
+      if (window.scrollY >= 80) {
+        el.classList.add('nav-dark');
+      } else {
+        el.classList.remove('nav-dark');
       }
     };
 
+    window.addEventListener('scroll', onScroll);
+
+    // Close dropdowns when clicking outside
+    const handleClickOutside = (event) => {
+      // If click is inside any of these, don't close
+      const target = event.target;
+      if (
+        target.closest?.('.search-container') ||
+        target.closest?.('.notifications-container') ||
+        target.closest?.('.navbar-profile')
+      ) {
+        return;
+      }
+      setShowSearch(false);
+      setShowNotifications(false);
+      setShowProfileDropdown(false);
+    };
+
     document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
-  },[])
+
+    // cleanup
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, []);
 
   const handleNavClick = (page) => {
     setCurrentPage(page);
-    addNotification(`Switched to ${page}`, 'info');
+    addNotification?.(`Switched to ${page}`, 'info');
   };
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
-    if (searchQuery.trim()) {
+    if (searchQuery?.trim()) {
       handleSearch(searchQuery);
       setShowSearch(false);
     }
   };
 
   return (
-    <div ref={navRef} className='navbar'>
+    <div ref={navRef} className="navbar">
       <div className="navbar-left">
-        <img src={logo} alt="" onClick={() => handleNavClick('home')} style={{cursor: 'pointer'}} />
+        <img
+          src={logo}
+          alt="logo"
+          onClick={() => handleNavClick('home')}
+          style={{ cursor: 'pointer' }}
+        />
         <ul>
-          <li 
-            className={currentPage === 'home' ? 'active' : ''} 
+          <li
+            className={currentPage === 'home' ? 'active' : ''}
             onClick={() => handleNavClick('home')}
           >
             Home
           </li>
-          <li 
-            className={currentPage === 'tv-shows' ? 'active' : ''} 
+
+          <li
+            className={currentPage === 'tv-shows' ? 'active' : ''}
             onClick={() => handleNavClick('tv-shows')}
           >
             TV Shows
           </li>
-          <li 
-            className={currentPage === 'movies' ? 'active' : ''} 
+
+          <li
+            className={currentPage === 'movies' ? 'active' : ''}
             onClick={() => handleNavClick('movies')}
           >
             Movies
           </li>
-          <li 
-            className={currentPage === 'new-popular' ? 'active' : ''} 
+
+          <li
+            className={currentPage === 'new-popular' ? 'active' : ''}
             onClick={() => handleNavClick('new-popular')}
           >
-            New & Popular
+            New &amp; Popular
           </li>
-          <li 
-            className={currentPage === 'my-list' ? 'active' : ''} 
+
+          <li
+            className={currentPage === 'my-list' ? 'active' : ''}
             onClick={() => handleNavClick('my-list')}
           >
             My List
           </li>
-          <li 
-            className={currentPage === 'browse-languages' ? 'active' : ''} 
-            onClick={() => handleNavClick('browse-languages')}
-          >
-            Browse by Languages
-          </li>
+
+          {/* "Browse by Languages" intentionally removed */}
         </ul>
       </div>
+
       <div className="navbar-right">
         <div className="search-container">
-          <img 
-            src={search_icon} 
-            alt="" 
-            className='icons' 
-            onClick={() => setShowSearch(!showSearch)}
-            style={{cursor: 'pointer'}}
+          <img
+            src={search_icon}
+            alt="search"
+            className="icons"
+            onClick={() => setShowSearch((s) => !s)}
+            style={{ cursor: 'pointer' }}
           />
           {showSearch && (
             <div className="search-dropdown">
@@ -145,13 +170,13 @@ const Navbar = () => {
                 <button type="submit">Search</button>
               </form>
               {isSearching && <div className="search-loading">Searching...</div>}
-              {searchResults.length > 0 && (
+              {Array.isArray(searchResults) && searchResults.length > 0 && (
                 <div className="search-results">
                   {searchResults.slice(0, 5).map((result) => (
                     <div key={result.id} className="search-result-item">
-                      <img 
-                        src={`https://image.tmdb.org/t/p/w92${result.poster_path || result.backdrop_path}`} 
-                        alt={result.title || result.name} 
+                      <img
+                        src={`https://image.tmdb.org/t/p/w92${result.poster_path || result.backdrop_path}`}
+                        alt={result.title || result.name}
                       />
                       <span>{result.title || result.name}</span>
                     </div>
@@ -161,68 +186,96 @@ const Navbar = () => {
             </div>
           )}
         </div>
+
         <p>Children</p>
+
         <div className="notifications-container">
-          <img 
-            src={bell_icon} 
-            alt="" 
-            className='icons' 
-            onClick={() => setShowNotifications(!showNotifications)}
-            style={{cursor: 'pointer'}}
+          <img
+            src={bell_icon}
+            alt="notifications"
+            className="icons"
+            onClick={() => setShowNotifications((s) => !s)}
+            style={{ cursor: 'pointer' }}
           />
           {showNotifications && (
             <div className="notifications-dropdown">
               <h3>Notifications</h3>
-              {notifications.length === 0 ? (
+              {!Array.isArray(notifications) || notifications.length === 0 ? (
                 <p>No new notifications</p>
               ) : (
                 notifications.slice(0, 5).map((notification) => (
                   <div key={notification.id} className="notification-item">
                     <span>{notification.message}</span>
-                    <small>{notification.timestamp.toLocaleTimeString()}</small>
+                    <small>
+                      {notification.timestamp instanceof Date
+                        ? notification.timestamp.toLocaleTimeString()
+                        : String(notification.timestamp)}
+                    </small>
                   </div>
                 ))
               )}
             </div>
           )}
         </div>
+
         <div className="navbar-profile">
-          <div 
-            className='profile' 
-            onClick={() => setShowProfileDropdown(!showProfileDropdown)}
-            style={{cursor: 'pointer'}}
+          <div
+            className="profile"
+            onClick={() => setShowProfileDropdown((s) => !s)}
+            style={{ cursor: 'pointer' }}
           >
             {displayFirstName.charAt(0)}
           </div>
-          <img 
-            src={caret_icon} 
-            alt="" 
-            onClick={() => setShowProfileDropdown(!showProfileDropdown)}
-            style={{cursor: 'pointer'}}
+
+          <img
+            src={caret_icon}
+            alt="caret"
+            onClick={() => setShowProfileDropdown((s) => !s)}
+            style={{ cursor: 'pointer' }}
           />
+
           {showProfileDropdown && (
             <div className="dropdown">
               <div className="profile-dropdown-header">
-                <div className="dropdown-avatar">
-                  {displayFirstName.charAt(0)}
-                </div>
+                <div className="dropdown-avatar">{displayFirstName.charAt(0)}</div>
                 <span className="profile-name">{displayFirstName}</span>
               </div>
-              <div className="dropdown-divider"></div>
-              <p onClick={() => {navigate('/profile'); setShowProfileDropdown(false);}}>
+
+              <div className="dropdown-divider" />
+
+              <p
+                onClick={() => {
+                  navigate('/profile');
+                  setShowProfileDropdown(false);
+                }}
+              >
                 Manage Profile
               </p>
-              <p onClick={() => {navigate('/profile'); setShowProfileDropdown(false);}}>
+
+              <p
+                onClick={() => {
+                  navigate('/profile');
+                  setShowProfileDropdown(false);
+                }}
+              >
                 Viewing History
               </p>
-              <div className="dropdown-divider"></div>
-              <p onClick={()=>{logout()}}>Sign Out of Netflix</p>
+
+              <div className="dropdown-divider" />
+
+              <p
+                onClick={() => {
+                  logout();
+                }}
+              >
+                Sign Out of Netflix
+              </p>
             </div>
           )}
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Navbar
+export default Navbar;
