@@ -2,8 +2,8 @@
 // This file preserves the same exports: auth, db, signup, login, logout
 // so the rest of the app can remain unchanged.
 
-// Config: change via Vite env VITE_API_BASE or default localhost
-const API_BASE = "https://notflix-back.onrender.com";
+// Config: change via Vite env VITE_API_BASE or default relative path for Docker/Proxy
+const API_BASE = import.meta.env.VITE_API_BASE || "";
 
 // ---- Lightweight auth state management ----
 let currentUser = null; // { uid, name, email } or null
@@ -14,12 +14,12 @@ const AUTH_USER_KEY = "auth_user";
 try {
   const savedUser = localStorage.getItem(AUTH_USER_KEY);
   if (savedUser) currentUser = JSON.parse(savedUser);
-} catch {}
+} catch { }
 
 const subscribers = new Set();
 const notifyAuthSubscribers = () => {
   subscribers.forEach((cb) => {
-    try { cb(currentUser); } catch {}
+    try { cb(currentUser); } catch { }
   });
 };
 
@@ -32,7 +32,7 @@ const auth = {
   onAuthStateChanged(callback) {
     subscribers.add(callback);
     // Fire immediately with current state
-    try { callback(currentUser); } catch {}
+    try { callback(currentUser); } catch { }
     // Return unsubscribe
     return () => subscribers.delete(callback);
   },
@@ -65,7 +65,7 @@ async function api(path, options = {}) {
     try {
       const data = await res.json();
       errMsg = data?.message || data?.error || errMsg;
-    } catch {}
+    } catch { }
     throw new Error(errMsg);
   }
 

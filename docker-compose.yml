@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./back
+    ports:
+      - "5000:5000"
+    env_file:
+      - ./back/.env
+    environment:
+      - PORT=5000
+    networks:
+      - notflix-network
+
+  frontend:
+    build: ./front
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - notflix-network
+
+networks:
+  notflix-network:
+    driver: bridge
