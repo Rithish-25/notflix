@@ -111,3 +111,16 @@ app.post('/api/auth/logout', (req, res) => {
 app.get('/api/auth/me', authMiddleware, (req, res) => {
   res.json({ user: { _id: req.user._id, name: req.user.name, email: req.user.email } });
 });
+
+// Serve static files (Frontend)
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+app.use(express.static(path.join(__dirname, 'public')));
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
