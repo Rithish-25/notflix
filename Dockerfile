@@ -1,6 +1,4 @@
-# Stage 1: Build the Frontend
-# We use a node image to build the React application
-FROM node:18-alpine AS frontend-build
+FROM node:22-alpine AS frontend-build
 
 # Set working directory for frontend
 WORKDIR /app/front
@@ -20,7 +18,7 @@ RUN npm run build
 
 # Stage 2: Setup the Backend and Serve
 # We use a node image to run the backend, which will also serve the frontend
-FROM node:18-alpine
+FROM node:22-alpine
 
 # Set working directory for the application
 WORKDIR /app
