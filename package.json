@@ -1,0 +1,10 @@
+{
+    "name": "notflix-monorepo",
+    "version": "1.0.0",
+    "private": true,
+    "scripts": {
+        "install-all": "npm install --prefix back && npm install --prefix front",
+        "build": "cd front && npm install && npm run build && cd .. && mkdir -p back/public && cp -r front/dist/* back/public/",
+        "start": "cd back && npm start"
+    }
+}
