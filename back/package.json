@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "node --watch index.js",
     "start": "node index.js",
-    "build": "cd ../front && npm install && npm run build && cd ../back && mkdir -p public && cp -r ../front/dist/* public/"
+    "build": "cd ../front && npm install && npm run build && cd ../back && rm -rf public && mkdir -p public && cp -r ../front/dist/. public/"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
